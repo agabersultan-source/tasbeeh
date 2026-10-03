@@ -389,31 +389,65 @@
 
     <script>
         /* ==========================================================================
-           PWA SERVICE WORKER & DYNAMIC MANIFEST (SHORT_NAME: "تسبيح")
+           PWA SERVICE WORKER & DYNAMIC MANIFEST (PNG GENERATOR FOR WEBAPK)
            ========================================================================== */
-        // SVG App Icon for Home Screen
-        const appIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-            <rect width="512" height="512" rx="120" fill="#022c22"/>
-            <circle cx="256" cy="256" r="210" fill="#064e3b" stroke="#f59e0b" stroke-width="12"/>
-            <circle cx="256" cy="256" r="185" fill="none" stroke="#fbbf24" stroke-width="4" stroke-dasharray="12 12"/>
-            <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#fbbf24" font-family="'Amiri', serif" font-weight="bold" font-size="240">ت</text>
-        </svg>`;
-        const appIconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(appIconSvg)));
+        // Generate High-Res PNG App Icon dynamically via Canvas for Android WebAPK
+        function createPngAppIcon() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
 
-        // Create Web App Manifest dynamically
+            // Background
+            ctx.fillStyle = '#022c22';
+            ctx.beginPath();
+            ctx.roundRect ? ctx.roundRect(0, 0, 512, 512, 120) : ctx.rect(0, 0, 512, 512);
+            ctx.fill();
+
+            // Inner Green Circle
+            ctx.fillStyle = '#064e3b';
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 12;
+            ctx.beginPath();
+            ctx.arc(256, 256, 210, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Dotted Ring
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([12, 12]);
+            ctx.beginPath();
+            ctx.arc(256, 256, 185, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Text 'ت'
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 240px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ت', 256, 270);
+
+            return canvas.toDataURL('image/png');
+        }
+
+        const appIconPngUrl = createPngAppIcon();
+
+        // Create Web App Manifest dynamically with PNG format required by WebAPK
         const manifestData = {
-            "name": "تسبيح - المسبحة الإلكترونية المتطورة",
+            "name": "تسبيح",
             "short_name": "تسبيح",
             "description": "تطبيق تسبيح ومسبحة إلكترونية متطورة بدون إنترنت",
             "start_url": "./",
             "display": "standalone",
+            "orientation": "portrait",
             "background_color": "#022c22",
             "theme_color": "#064e3b",
             "icons": [
                 {
-                    "src": appIconUrl,
+                    "src": appIconPngUrl,
                     "sizes": "512x512",
-                    "type": "image/svg+xml",
+                    "type": "image/png",
                     "purpose": "any maskable"
                 }
             ]
@@ -429,13 +463,13 @@
         // Apple Touch Icon
         const appleIcon = document.createElement('link');
         appleIcon.rel = 'apple-touch-icon';
-        appleIcon.href = appIconUrl;
+        appleIcon.href = appIconPngUrl;
         document.head.appendChild(appleIcon);
 
         // Register Service Worker dynamically
         if ('serviceWorker' in navigator) {
             const swContent = `
-                const CACHE_NAME = 'tasbeeh-pwa-v2';
+                const CACHE_NAME = 'tasbeeh-pwa-v3';
                 self.addEventListener('install', (e) => self.skipWaiting());
                 self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
                 self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
@@ -497,7 +531,7 @@
                 }
                 deferredPrompt = null;
             } else {
-                alert('تطبيق "تسبيح" جاهز للتثبيت! يمكنك إضافته للشاشة الرئيسية من خيارات المتصفح.');
+                alert('تطبيق "تسبيح" جاهز للتثبيت! اضغط على خيارات المتصفح (⋮) ثم اختر "تثبيت التطبيق" (Install App).');
             }
         }
 
