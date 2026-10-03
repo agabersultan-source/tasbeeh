@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>تسبيح - المسبحة الإلكترونية المتطورة</title>
+    
+    <!-- PWA Primary Meta Tags -->
+    <meta name="theme-color" content="#064e3b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="تسبيح">
+    <meta name="description" content="تطبيق تسبيح ومسبحة إلكترونية متطورة تعمل بدون إنترنت مع إحصائيات وأهداف وأصوات حية">
+
+    <!-- Fonts: Tajawal & Amiri -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            850: '#044233',
+                            950: '#022c22',
+                        },
+                        amber: {
+                            450: '#f69d0c',
+                        }
+                    },
+                    fontFamily: {
+                        tajawal: ['Tajawal', 'sans-serif'],
+                        amiri: ['Amiri', 'serif'],
+                    },
+                    boxShadow: {
+                        'gold-glow': '0 0 25px rgba(245, 158, 11, 0.35)',
+                        'emerald-glow': '0 0 25px rgba(16, 185, 129, 0.35)',
+                        'inner-glow': 'inset 0 2px 8px rgba(255, 255, 255, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Canvas Confetti Library for Target Achievements -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        .bg-pattern {
+            background-color: #064e3b;
+            background-image: radial-gradient(rgba(251, 191, 36, 0.08) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+
+        .dark .bg-pattern {
+            background-color: #022c22;
+            background-image: radial-gradient(rgba(245, 158, 11, 0.06) 1px, transparent 0);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark .glass-card {
+            background: rgba(6, 78, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .tasbeeh-btn-active:active {
+            transform: scale(0.94);
+        }
+
+        /* Pulse Ring for Main Counter Button */
+        @keyframes ringPulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+            70% { box-shadow: 0 0 0 20px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        .animate-ring-pulse {
+            animation: ringPulse 2s infinite;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-pattern min-h-screen text-slate-800 dark:text-emerald-50 transition-colors duration-300 flex flex-col justify-between items-center p-3 sm:p-6 overflow-x-hidden">
+
+    <!-- PWA Install Banner / Notification Bar -->
+    <div id="pwaBanner" class="hidden fixed top-3 left-3 right-3 z-50 max-w-lg mx-auto bg-gradient-to-r from-emerald-900 to-emerald-950 text-white rounded-2xl p-4 shadow-2xl border border-amber-400/40 flex flex-col gap-3 transition-all duration-500">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-400 to-yellow-300 flex items-center justify-center text-emerald-950 font-black text-2xl shadow-lg font-amiri">
+                    ت
+                </div>
+                <div>
+                    <h3 class="font-bold text-base sm:text-lg text-amber-300">تحميل تطبيق "تسبيح"</h3>
+                    <p class="text-xs text-emerald-100">احصل على المسبحة على شاشة هاتفك لتسبيح أسرع وبدون إنترنت!</p>
+                </div>
+            </div>
+            <button onclick="dismissPwaBanner()" class="text-emerald-300 hover:text-white p-1 text-xl font-bold rounded-lg transition-colors" title="إغلاق">
+                ✕
+            </button>
+        </div>
+
+        <!-- Android / Desktop Direct Install Button -->
+        <button id="pwaInstallBtn" onclick="installPWA()" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-emerald-950 font-bold py-2.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm">
+            <span>📱 تحميل وتثبيت التطبيق الآن</span>
+        </button>
+
+        <!-- iOS Instructions Container -->
+        <div id="iosInstallGuide" class="hidden text-xs bg-emerald-900/80 p-3 rounded-xl border border-emerald-600/40 text-emerald-100 space-y-1">
+            <p class="font-bold text-amber-300">💡 للتثبيت على آيفون (iOS):</p>
+            <p>1. اضغط على زر المشاركة <span class="text-amber-300 text-base">⎘</span> أسفل الشاشة في المتصفح.</p>
+            <p>2. اختر <span class="font-semibold text-white">"إضافة إلى الشاشة الرئيسية ➕"</span>.</p>
+        </div>
+    </div>
+
+    <!-- Top Header Bar -->
+    <header class="w-full max-w-lg flex items-center justify-between gap-2 py-2 px-1">
+        <div class="flex items-center gap-2">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-emerald-950 font-black text-2xl shadow-md border border-amber-300/40 font-amiri">
+                ت
+            </div>
+            <div>
+                <h1 class="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400 tracking-wide font-amiri">تسبيح</h1>
+                <p class="text-[10px] sm:text-xs text-slate-600 dark:text-emerald-300 font-medium">المسبحة الإلكترونية المتطورة</p>
+            </div>
+        </div>
+
+        <!-- Utility Buttons Header -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+            <!-- Theme Toggle -->
+            <button onclick="toggleTheme()" class="p-2.5 rounded-xl glass-card text-amber-500 hover:text-amber-400 transition-all shadow-sm active:scale-95" title="تغيير المظهر">
+                <span id="themeIcon">🌙</span>
+            </button>
+            <!-- Audio Toggle -->
+            <button onclick="toggleSound()" id="soundBtn" class="p-2.5 rounded-xl glass-card text-amber-500 hover:text-amber-400 transition-all shadow-sm active:scale-95" title="الصوت">
+                <span id="soundIcon">🔊</span>
+            </button>
+            <!-- Statistics Modal Open Button -->
+            <button onclick="openStatsModal()" class="p-2.5 rounded-xl glass-card text-amber-500 hover:text-amber-400 transition-all shadow-sm active:scale-95 flex items-center gap-1 font-bold text-xs" title="الإحصائيات">
+                📊 <span class="hidden sm:inline">الإحصائيات</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-lg my-auto flex flex-col items-center gap-4 sm:gap-6 py-2">
+
+        <!-- Dhikr Selection Card -->
+        <div class="w-full glass-card rounded-2xl p-3 sm:p-4 shadow-xl border border-amber-500/20">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-slate-700 dark:text-emerald-200">اختر الذكر:</span>
+                <button onclick="openCustomDhikrModal()" class="text-xs text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
+                    ➕ ذكر مخصص
+                </button>
+            </div>
+            
+            <div id="dhikrContainer" class="flex gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar text-xs font-bold">
+                <!-- Dhikr pills populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Counter Wheel Main Box -->
+        <div class="w-full glass-card rounded-3xl p-5 sm:p-8 shadow-2xl flex flex-col items-center justify-center relative overflow-hidden border border-amber-500/30">
+            
+            <!-- Current Dhikr Display Title -->
+            <div class="text-center mb-3">
+                <h2 id="currentDhikrTitle" class="text-2xl sm:text-3xl font-bold font-amiri text-amber-500 dark:text-amber-300 drop-shadow-sm transition-all duration-300">
+                    سُبْحَانَ اللَّهِ
+                </h2>
+                <p id="targetStatusText" class="text-xs text-slate-500 dark:text-emerald-300/80 mt-0.5">
+                    الهدف: 33 مرة
+                </p>
+            </div>
+
+            <!-- Central Counter Circle with Target Progress Ring -->
+            <div class="relative w-56 h-56 sm:w-64 sm:h-64 my-2 flex items-center justify-center">
+                
+                <!-- SVG Circular Progress Ring (Completely Hidden in Infinite mode) -->
+                <svg id="progressRingSvg" class="w-full h-full transform -rotate-90 transition-all duration-300" viewBox="0 0 120 120">
+                    <!-- Background Circle Ring -->
+                    <circle cx="60" cy="60" r="52" stroke="currentColor" stroke-width="6" class="text-emerald-900/30 dark:text-emerald-950/50" fill="transparent" />
+                    <!-- Animated Progress Bar Circle -->
+                    <circle id="progressCircle" cx="60" cy="60" r="52" stroke="url(#goldGradient)" stroke-width="7" 
+                            stroke-linecap="round" fill="transparent" 
+                            stroke-dasharray="326.72" stroke-dashoffset="0"
+                            class="transition-all duration-300 ease-out" />
+                    <defs>
+                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#fef08a" />
+                            <stop offset="50%" stop-color="#f59e0b" />
+                            <stop offset="100%" stop-color="#b45309" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+
+                <!-- Infinite Mode Glow Background (Active when in Unlimited mode) -->
+                <div id="infiniteGlow" class="hidden absolute inset-2 rounded-full bg-gradient-to-tr from-amber-500/10 to-emerald-500/10 animate-pulse"></div>
+
+                <!-- Interactive Main Tap Counter Button -->
+                <button id="tasbeehBtn" onclick="incrementCounter()" 
+                        class="absolute inset-4 sm:inset-5 rounded-full bg-gradient-to-b from-emerald-800 to-emerald-950 dark:from-emerald-900 dark:to-emerald-950 text-white shadow-2xl border-4 border-amber-400/80 flex flex-col items-center justify-center cursor-pointer tasbeeh-btn-active focus:outline-none select-none group transition-transform duration-100">
+                    
+                    <span id="counterDisplay" class="text-5xl sm:text-6xl font-black text-amber-300 tracking-tight font-tajawal drop-shadow-md">
+                        0
+                    </span>
+
+                    <span id="targetPercentage" class="text-xs font-semibold text-emerald-200/90 mt-1">
+                        0%
+                    </span>
+
+                    <span class="text-[10px] text-amber-400/80 mt-2 font-bold tracking-wider group-hover:scale-105 transition-transform">
+                        اضغط للتسبيح 📿
+                    </span>
+                </button>
+            </div>
+
+            <!-- Target Selection Mode Options Bar -->
+            <div class="w-full mt-4 flex items-center justify-between gap-1 sm:gap-2 bg-emerald-950/20 dark:bg-emerald-950/50 p-1.5 rounded-2xl border border-amber-500/10">
+                <span class="text-[11px] font-bold text-slate-600 dark:text-emerald-300 mr-2 hidden sm:inline">الهدف:</span>
+                <div class="flex items-center gap-1 w-full justify-around text-xs font-bold">
+                    <button onclick="setTarget(33)" id="targetBtn33" class="target-btn flex-1 py-1.5 rounded-xl transition-all">33</button>
+                    <button onclick="setTarget(100)" id="targetBtn100" class="target-btn flex-1 py-1.5 rounded-xl transition-all">100</button>
+                    <button onclick="setTarget(1000)" id="targetBtn1000" class="target-btn flex-1 py-1.5 rounded-xl transition-all">1000</button>
+                    <button onclick="setTarget('infinite')" id="targetBtnInfinite" class="target-btn flex-1 py-1.5 rounded-xl transition-all text-sm">مفتوح ∞</button>
+                    <button onclick="openCustomTargetModal()" id="targetBtnCustom" class="target-btn flex-1 py-1.5 rounded-xl transition-all">مخصص ⚙️</button>
+                </div>
+            </div>
+
+            <!-- Action Buttons Row: Reset & Undo -->
+            <div class="w-full flex items-center justify-between gap-3 mt-4">
+                <button onclick="undoCounter()" class="flex-1 py-2 px-3 glass-card hover:bg-amber-500/10 text-slate-700 dark:text-emerald-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1">
+                    ↩ تراجع
+                </button>
+                <button onclick="resetCurrentCounter()" class="flex-1 py-2 px-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-xs font-bold transition-all border border-red-500/20 flex items-center justify-center gap-1">
+                    🔄 إعادة العداد
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Stats Bar -->
+        <div class="w-full glass-card rounded-2xl p-3 sm:p-4 shadow-md flex items-center justify-around text-center border border-amber-500/15">
+            <div>
+                <p class="text-[10px] text-slate-500 dark:text-emerald-300/80 font-bold">تسبيحات اليوم</p>
+                <p id="todayCountDisplay" class="text-base sm:text-lg font-black text-amber-500">0</p>
+            </div>
+            <div class="h-8 w-[1px] bg-amber-500/20"></div>
+            <div>
+                <p class="text-[10px] text-slate-500 dark:text-emerald-300/80 font-bold">الإجمالي الكلي</p>
+                <p id="totalCountDisplay" class="text-base sm:text-lg font-black text-amber-500">0</p>
+            </div>
+            <div class="h-8 w-[1px] bg-amber-500/20"></div>
+            <div>
+                <p class="text-[10px] text-slate-500 dark:text-emerald-300/80 font-bold">أيام الأسبوع 📊</p>
+                <p id="streakCountDisplay" class="text-base sm:text-lg font-black text-amber-500">1 يوم</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-lg text-center py-2 text-[11px] text-slate-500 dark:text-emerald-300/60 font-medium">
+        <p>قال رسول الله ﷺ: «مَنْ سَبَّحَ اللَّهَ فِي دُبُرِ كُلِّ صَلاَةٍ ثَلاَثاً وَثَلاَثِينَ...»</p>
+        <p class="mt-0.5 text-amber-500/80 font-bold">تطبيق "تسبيح" - صدقة جارية 🤲</p>
+    </footer>
+
+    <!-- Modal: Statistics & History -->
+    <div id="statsModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card rounded-3xl p-5 shadow-2xl border border-amber-500/30 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-amber-500/20">
+                <h3 class="text-lg font-bold text-amber-500 flex items-center gap-2">
+                    📊 إحصائيات التسبيح
+                </h3>
+                <button onclick="closeStatsModal()" class="text-slate-400 hover:text-amber-500 text-lg font-bold">✕</button>
+            </div>
+            
+            <div class="overflow-y-auto my-4 space-y-4 pr-1">
+                <div class="grid grid-cols-2 gap-3 text-center">
+                    <div class="bg-emerald-950/30 p-3 rounded-2xl border border-amber-500/10">
+                        <p class="text-xs text-emerald-200">إجمالي التسبيحات</p>
+                        <p id="modalTotalCount" class="text-xl font-bold text-amber-400 mt-1">0</p>
+                    </div>
+                    <div class="bg-emerald-950/30 p-3 rounded-2xl border border-amber-500/10">
+                        <p class="text-xs text-emerald-200">إنجازات اليوم</p>
+                        <p id="modalTodayCount" class="text-xl font-bold text-amber-400 mt-1">0</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-bold text-emerald-200 mb-2">سجل التسبيحات المكتملة:</h4>
+                    <div id="historyList" class="space-y-2 max-h-48 overflow-y-auto text-xs">
+                        <!-- History items populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-amber-500/20 flex gap-2">
+                <button onclick="clearHistoryData()" class="w-full py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl font-bold text-xs transition-colors">
+                    🗑️ مسح السجل والإحصائيات
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Custom Dhikr -->
+    <div id="customDhikrModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm glass-card rounded-3xl p-5 shadow-2xl border border-amber-500/30">
+            <h3 class="text-lg font-bold text-amber-500 mb-3">إضافة ذكر جديد ➕</h3>
+            <input type="text" id="customDhikrInput" placeholder="اكتب الذكر هنا (مثال: أستغفر الله العظيم)..." 
+                   class="w-full bg-emerald-950/40 border border-amber-500/30 rounded-xl p-3 text-sm text-amber-100 placeholder-emerald-400/50 focus:outline-none focus:border-amber-400 mb-4">
+            <div class="flex gap-2">
+                <button onclick="saveCustomDhikr()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold rounded-xl text-xs transition-colors">
+                    حفظ ونقل العداد
+                </button>
+                <button onclick="closeCustomDhikrModal()" class="py-2.5 px-4 glass-card text-slate-300 font-bold rounded-xl text-xs">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Custom Target Input -->
+    <div id="customTargetModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="w-full max-w-sm glass-card rounded-3xl p-5 shadow-2xl border border-amber-500/30">
+            <h3 class="text-lg font-bold text-amber-500 mb-3">تحديد هدف مخصص 🎯</h3>
+            <input type="number" id="customTargetInput" placeholder="أدخل العدد المستهدف (مثال: 500)..." min="1" max="99999"
+                   class="w-full bg-emerald-950/40 border border-amber-500/30 rounded-xl p-3 text-sm text-amber-100 placeholder-emerald-400/50 focus:outline-none focus:border-amber-400 mb-4">
+            <div class="flex gap-2">
+                <button onclick="saveCustomTarget()" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold rounded-xl text-xs transition-colors">
+                    تطبيق الهدف
+                </button>
+                <button onclick="closeCustomTargetModal()" class="py-2.5 px-4 glass-card text-slate-300 font-bold rounded-xl text-xs">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Target Completed Celebration -->
+    <div id="completionModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-sm glass-card rounded-3xl p-6 shadow-2xl border-2 border-amber-400 text-center relative overflow-hidden">
+            <div class="text-5xl mb-2">🎉</div>
+            <h3 class="text-2xl font-bold font-amiri text-amber-400 mb-1">تقبل الله منك!</h3>
+            <p class="text-xs text-emerald-100 mb-4">أتممت الهدف بفضل الله وحمده ✨</p>
+            <div id="completedDhikrName" class="p-3 bg-amber-500/10 rounded-2xl font-amiri text-xl text-amber-300 border border-amber-500/20 mb-5">
+                سُبْحَانَ اللَّهِ (33 مرة)
+            </div>
+            <button onclick="closeCompletionModal()" class="w-full py-3 bg-gradient-to-r from-amber-400 to-amber-500 text-emerald-950 font-black rounded-xl text-sm shadow-lg hover:brightness-110 transition-all">
+                متابعة التسبيح 📿
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           PWA SERVICE WORKER & DYNAMIC MANIFEST (SHORT_NAME: "تسبيح")
+           ========================================================================== */
+        // SVG App Icon for Home Screen
+        const appIconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+            <rect width="512" height="512" rx="120" fill="#022c22"/>
+            <circle cx="256" cy="256" r="210" fill="#064e3b" stroke="#f59e0b" stroke-width="12"/>
+            <circle cx="256" cy="256" r="185" fill="none" stroke="#fbbf24" stroke-width="4" stroke-dasharray="12 12"/>
+            <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#fbbf24" font-family="'Amiri', serif" font-weight="bold" font-size="240">ت</text>
+        </svg>`;
+        const appIconUrl = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(appIconSvg)));
+
+        // Create Web App Manifest dynamically
+        const manifestData = {
+            "name": "تسبيح - المسبحة الإلكترونية المتطورة",
+            "short_name": "تسبيح",
+            "description": "تطبيق تسبيح ومسبحة إلكترونية متطورة بدون إنترنت",
+            "start_url": "./",
+            "display": "standalone",
+            "background_color": "#022c22",
+            "theme_color": "#064e3b",
+            "icons": [
+                {
+                    "src": appIconUrl,
+                    "sizes": "512x512",
+                    "type": "image/svg+xml",
+                    "purpose": "any maskable"
+                }
+            ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestURL;
+        document.head.appendChild(manifestLink);
+
+        // Apple Touch Icon
+        const appleIcon = document.createElement('link');
+        appleIcon.rel = 'apple-touch-icon';
+        appleIcon.href = appIconUrl;
+        document.head.appendChild(appleIcon);
+
+        // Register Service Worker dynamically
+        if ('serviceWorker' in navigator) {
+            const swContent = `
+                const CACHE_NAME = 'tasbeeh-pwa-v2';
+                self.addEventListener('install', (e) => self.skipWaiting());
+                self.addEventListener('activate', (e) => e.waitUntil(clients.claim()));
+                self.addEventListener('fetch', (e) => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+            `;
+            const swBlob = new Blob([swContent], { type: 'application/javascript' });
+            const swURL = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swURL).catch(err => console.log('SW registration note:', err));
+        }
+
+        /* ==========================================================================
+           PWA INSTALL BANNER MANAGEMENT
+           ========================================================================== */
+        let deferredPrompt = null;
+        const pwaBanner = document.getElementById('pwaBanner');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const iosInstallGuide = document.getElementById('iosInstallGuide');
+
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!isStandalone && !localStorage.getItem('tasbeeh_pwa_dismissed')) {
+                showPwaBanner();
+            }
+        });
+
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            if (isStandalone) {
+                if (pwaBanner) pwaBanner.classList.add('hidden');
+            } else if (isIOS && !localStorage.getItem('tasbeeh_pwa_dismissed')) {
+                showPwaBanner();
+                if (iosInstallGuide) iosInstallGuide.classList.remove('hidden');
+                if (pwaInstallBtn) pwaInstallBtn.classList.add('hidden');
+            } else if (!localStorage.getItem('tasbeeh_pwa_dismissed')) {
+                setTimeout(() => showPwaBanner(), 1500);
+            }
+        });
+
+        function showPwaBanner() {
+            if (pwaBanner && !isStandalone) {
+                pwaBanner.classList.remove('hidden');
+            }
+        }
+
+        function dismissPwaBanner() {
+            if (pwaBanner) pwaBanner.classList.add('hidden');
+            localStorage.setItem('tasbeeh_pwa_dismissed', 'true');
+        }
+
+        async function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    dismissPwaBanner();
+                }
+                deferredPrompt = null;
+            } else {
+                alert('تطبيق "تسبيح" جاهز للتثبيت! يمكنك إضافته للشاشة الرئيسية من خيارات المتصفح.');
+            }
+        }
+
+        /* ==========================================================================
+           APP STATE & DATA MANAGEMENT
+           ========================================================================== */
+        const defaultDhikerList = [
+            "سُبْحَانَ اللَّهِ",
+            "الْحَمْدُ لِلَّهِ",
+            "اللَّهُ أَكْبَرُ",
+            "لا إِلَهَ إِلا اللَّهُ",
+            "أَسْتَغْفِرُ اللَّهَ",
+            "لا حَوْلَ وَلا قُوَّةَ إِلا بِاللَّهِ",
+            "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
+            "اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ"
+        ];
+
+        let state = {
+            currentDhikrIndex: 0,
+            dhikrList: [...defaultDhikerList],
+            counter: 0,
+            target: 33, // 33, 100, 1000, 'infinite', or custom number
+            todayCount: 0,
+            totalCount: 0,
+            lastDate: new Date().toDateString(),
+            streak: 1,
+            soundEnabled: true,
+            theme: 'dark',
+            history: []
+        };
+
+        function loadState() {
+            const saved = localStorage.getItem('tasbeeh_pwa_state');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                    
+                    const today = new Date().toDateString();
+                    if (state.lastDate !== today) {
+                        state.todayCount = 0;
+                        state.lastDate = today;
+                    }
+                } catch (e) {
+                    console.error("Error loading state", e);
+                }
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('tasbeeh_pwa_state', JSON.stringify(state));
+        }
+
+        /* ==========================================================================
+           WEB AUDIO API SOUND SYNTHESIZER
+           ========================================================================== */
+        let audioCtx = null;
+
+        function playClickSound() {
+            if (!state.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.04);
+
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            } catch (e) {}
+        }
+
+        function playCompletionSound() {
+            if (!state.soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.15); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.30); // G5
+
+                gain.gain.setValueAtTime(0.4, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.6);
+            } catch (e) {}
+        }
+
+        function triggerHaptic() {
+            if (navigator.vibrate) {
+                navigator.vibrate(25);
+            }
+        }
+
+        /* ==========================================================================
+           UI RENDERING & DISPLAY LOGIC
+           ========================================================================== */
+        const counterDisplay = document.getElementById('counterDisplay');
+        const currentDhikrTitle = document.getElementById('currentDhikrTitle');
+        const targetStatusText = document.getElementById('targetStatusText');
+        const targetPercentage = document.getElementById('targetPercentage');
+        const progressCircle = document.getElementById('progressCircle');
+        const progressRingSvg = document.getElementById('progressRingSvg');
+        const infiniteGlow = document.getElementById('infiniteGlow');
+        const dhikrContainer = document.getElementById('dhikrContainer');
+        const todayCountDisplay = document.getElementById('todayCountDisplay');
+        const totalCountDisplay = document.getElementById('totalCountDisplay');
+        const streakCountDisplay = document.getElementById('streakCountDisplay');
+
+        const CIRCLE_CIRCUMFERENCE = 326.72; // 2 * PI * 52
+
+        function initApp() {
+            loadState();
+            applyTheme();
+            renderDhikrList();
+            updateDisplay();
+        }
+
+        function renderDhikrList() {
+            dhikrContainer.innerHTML = '';
+            state.dhikrList.forEach((dhikr, index) => {
+                const btn = document.createElement('button');
+                const isSelected = index === state.currentDhikrIndex;
+                btn.className = `px-3 py-2 rounded-xl whitespace-nowrap transition-all border ${
+                    isSelected 
+                        ? 'bg-amber-500 text-emerald-950 font-black border-amber-300 shadow-md scale-105' 
+                        : 'glass-card text-slate-700 dark:text-emerald-200 border-amber-500/10 hover:border-amber-500/40'
+                }`;
+                btn.innerText = dhikr;
+                btn.onclick = () => selectDhikr(index);
+                dhikrContainer.appendChild(btn);
+            });
+        }
+
+        function selectDhikr(index) {
+            state.currentDhikrIndex = index;
+            state.counter = 0;
+            saveState();
+            renderDhikrList();
+            updateDisplay();
+        }
+
+        function incrementCounter() {
+            state.counter++;
+            state.todayCount++;
+            state.totalCount++;
+
+            playClickSound();
+            triggerHaptic();
+
+            if (state.target !== 'infinite' && state.counter >= state.target) {
+                handleTargetCompletion();
+            }
+
+            saveState();
+            updateDisplay();
+        }
+
+        function undoCounter() {
+            if (state.counter > 0) {
+                state.counter--;
+                if (state.todayCount > 0) state.todayCount--;
+                if (state.totalCount > 0) state.totalCount--;
+                saveState();
+                updateDisplay();
+            }
+        }
+
+        function resetCurrentCounter() {
+            if (confirm('هل تريد إعادة عداد الذكر الحالي إلى الصفر؟')) {
+                state.counter = 0;
+                saveState();
+                updateDisplay();
+            }
+        }
+
+        function setTarget(targetVal) {
+            state.target = targetVal;
+            state.counter = 0;
+            saveState();
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            counterDisplay.innerText = state.counter;
+            currentDhikrTitle.innerText = state.dhikrList[state.currentDhikrIndex] || defaultDhikerList[0];
+            todayCountDisplay.innerText = state.todayCount;
+            totalCountDisplay.innerText = state.totalCount;
+            streakCountDisplay.innerText = `${state.streak} يوم`;
+
+            document.querySelectorAll('.target-btn').forEach(btn => {
+                btn.classList.remove('bg-amber-500', 'text-emerald-950', 'font-black');
+                btn.classList.add('glass-card', 'text-slate-700', 'dark:text-emerald-200');
+            });
+
+            if (state.target === 33) highlightTargetBtn('targetBtn33');
+            else if (state.target === 100) highlightTargetBtn('targetBtn100');
+            else if (state.target === 1000) highlightTargetBtn('targetBtn1000');
+            else if (state.target === 'infinite') highlightTargetBtn('targetBtnInfinite');
+            else highlightTargetBtn('targetBtnCustom');
+
+            // CRITICAL: Hide ring completely when target is Infinite (∞)
+            if (state.target === 'infinite' || state.target === 0) {
+                progressRingSvg.classList.add('opacity-0', 'pointer-events-none');
+                infiniteGlow.classList.remove('hidden');
+                targetStatusText.innerText = 'الهدف: عداد مفتوح (∞)';
+                targetPercentage.innerText = 'وضع ∞';
+            } else {
+                progressRingSvg.classList.remove('opacity-0', 'pointer-events-none');
+                infiniteGlow.classList.add('hidden');
+                targetStatusText.innerText = `الهدف: ${state.target} مرة`;
+
+                const pct = Math.min(100, Math.round((state.counter / state.target) * 100));
+                targetPercentage.innerText = `${pct}%`;
+
+                const offset = CIRCLE_CIRCUMFERENCE - (pct / 100) * CIRCLE_CIRCUMFERENCE;
+                progressCircle.style.strokeDashoffset = offset;
+            }
+        }
+
+        function highlightTargetBtn(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('glass-card', 'text-slate-700', 'dark:text-emerald-200');
+                el.classList.add('bg-amber-500', 'text-emerald-950', 'font-black');
+            }
+        }
+
+        function handleTargetCompletion() {
+            playCompletionSound();
+            
+            state.history.unshift({
+                dhikr: state.dhikrList[state.currentDhikrIndex],
+                count: state.target,
+                date: new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' }) + ' - ' + new Date().toLocaleDateString('ar-EG')
+            });
+
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 80,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            document.getElementById('completedDhikrName').innerText = `${state.dhikrList[state.currentDhikrIndex]} (${state.target} مرة)`;
+            document.getElementById('completionModal').classList.remove('hidden');
+        }
+
+        function closeCompletionModal() {
+            document.getElementById('completionModal').classList.add('hidden');
+            state.counter = 0;
+            saveState();
+            updateDisplay();
+        }
+
+        function toggleTheme() {
+            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            applyTheme();
+            saveState();
+        }
+
+        function applyTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            if (state.theme === 'dark') {
+                html.classList.add('dark');
+                themeIcon.innerText = '🌙';
+            } else {
+                html.classList.remove('dark');
+                themeIcon.innerText = '☀️';
+            }
+        }
+
+        function toggleSound() {
+            state.soundEnabled = !state.soundEnabled;
+            const soundIcon = document.getElementById('soundIcon');
+            soundIcon.innerText = state.soundEnabled ? '🔊' : '🔇';
+            saveState();
+        }
+
+        function openCustomDhikrModal() {
+            document.getElementById('customDhikrModal').classList.remove('hidden');
+        }
+        function closeCustomDhikrModal() {
+            document.getElementById('customDhikrModal').classList.add('hidden');
+            document.getElementById('customDhikrInput').value = '';
+        }
+        function saveCustomDhikr() {
+            const text = document.getElementById('customDhikrInput').value.trim();
+            if (text) {
+                state.dhikrList.push(text);
+                state.currentDhikrIndex = state.dhikrList.length - 1;
+                state.counter = 0;
+                saveState();
+                renderDhikrList();
+                updateDisplay();
+                closeCustomDhikrModal();
+            }
+        }
+
+        function openCustomTargetModal() {
+            document.getElementById('customTargetModal').classList.remove('hidden');
+        }
+        function closeCustomTargetModal() {
+            document.getElementById('customTargetModal').classList.add('hidden');
+            document.getElementById('customTargetInput').value = '';
+        }
+        function saveCustomTarget() {
+            const val = parseInt(document.getElementById('customTargetInput').value);
+            if (val && val > 0) {
+                setTarget(val);
+                closeCustomTargetModal();
+            }
+        }
+
+        function openStatsModal() {
+            document.getElementById('modalTotalCount').innerText = state.totalCount;
+            document.getElementById('modalTodayCount').innerText = state.todayCount;
+            
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            if (state.history.length === 0) {
+                historyList.innerHTML = '<p class="text-emerald-300/60 text-center py-4">لا توجد أهداف مكتملة مسجلة بعد.</p>';
+            } else {
+                state.history.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'p-2.5 bg-emerald-950/40 rounded-xl border border-amber-500/10 flex justify-between items-center';
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-bold text-amber-300">${item.dhikr}</p>
+                            <p class="text-[10px] text-emerald-200/70">${item.date}</p>
+                        </div>
+                        <span class="px-2 py-1 bg-amber-500/20 text-amber-300 font-bold rounded-lg">${item.count} مرة</span>
+                    `;
+                    historyList.appendChild(div);
+                });
+            }
+
+            document.getElementById('statsModal').classList.remove('hidden');
+        }
+
+        function closeStatsModal() {
+            document.getElementById('statsModal').classList.add('hidden');
+        }
+
+        function clearHistoryData() {
+            if (confirm('هل أنت تأكد من مسح جميع الإحصائيات والسجل؟')) {
+                state.totalCount = 0;
+                state.todayCount = 0;
+                state.counter = 0;
+                state.history = [];
+                saveState();
+                updateDisplay();
+                closeStatsModal();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'Enter') {
+                e.preventDefault();
+                incrementCounter();
+            }
+        });
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
